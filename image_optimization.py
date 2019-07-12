@@ -38,6 +38,7 @@ filenameSuffix = '_red.JPG'
 
 # Get the entire path for the JPGs and RAWs
 JPGs = [el for el in glob.glob(imageDirectory+'/*.JPG') if filenameSuffix not in el]
+SortFilenameByNumber(JPGs)
 
 for path in JPGs:
 
