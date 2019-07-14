@@ -96,13 +96,14 @@ for formattedDate in sortedPaths.keys():
         for i,path in enumerate(sortedPaths[formattedDate]):
 
             img = Image.open(path)
+            exif = im.info['exif']
             if __REDUCESIZE__:
                 img = img.resize(tuple(int(el*0.325) for el in img.size),Image.ANTIALIAS)
 
             newPath = reducedPath+formattedDate+'_'+filenamePrefix[formattedDate]+'-'+str(i)+filenameSuffix
             newFilename = os.path.basename(newPath)
 
-            img.save(newPath,quality=__QUALITY__,optimize=True)
+            img.save(newPath,quality=__QUALITY__,optimize=True,exif=exif)
             print("Reducing "+os.path.basename(path)+" | Saving as: "+newFilename)
 
     # move JPG and NEF files into JPG and RAW

@@ -48,13 +48,14 @@ for path in JPGs:
     for i,path in enumerate(JPGs):
 
         img = Image.open(path)
+        exif = img.info['exif'] 
         if __REDUCESIZE__:
             img = img.resize(tuple(int(el*0.325) for el in img.size),Image.ANTIALIAS)
 
         newPath = saveDirectory+__DATE__+'_'+filenamePrefix+'-'+str(i)+filenameSuffix
         newFilename = os.path.basename(newPath)
 
-        img.save(newPath,quality=__QUALITY__,optimize=True)
+        img.save(newPath,quality=__QUALITY__,optimize=True,exif=exif)
         print("Reducing "+os.path.basename(path)+" | Saving as: "+newFilename)
 
 
