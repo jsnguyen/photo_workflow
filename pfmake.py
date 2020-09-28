@@ -1,31 +1,44 @@
-import os
+#!/usr/local/bin/python3
 
-usr_date = input("Enter date in MMDDYY format: ")
+import os
+import pathlib
+from datetime import datetime
+
+usr_date = input("Enter date in YYYY-MM-DD format: ")
+
+try:
+    usr_datetime_obj = datetime.strptime(usr_date,'%Y-%m-%d')
+except ValueError:
+    raise Exception('Invalid date! Exiting...')
+
+print(usr_date)
+
 usr_title = input("Enter title of folder: ")
 path = usr_date+'_'+usr_title
 
 try:
-    os.mkdir(path)
+    pathlib.Path(path).mkdir(parents=True, exist_ok=True)
 except:
     print("Creation of the directory %s failed" % path)
 else:
     print("Successfully created the directory %s " % path)
 
 
-subpath=path+'/D610'
+subpath=os.path.join(path,'D610')
 
 try:
-    os.mkdir(subpath)
+    pathlib.Path(subpath).mkdir(parents=True, exist_ok=True)
 except:
     print("Creation of the directory %s failed" % subpath)
 else:
     print("Successfully created the directory %s " % subpath)
 
-subsubpath=[subpath+'/RAW',subpath+'/JPG']
+subsubfoldernames = ['RAW', 'JPG', 'Videos']
+subsubpath=[os.path.join(subpath,fn) for fn in subsubfoldernames]
 
 for p in subsubpath:
     try:
-        os.mkdir(p)
+        pathlib.Path(p).mkdir(parents=True, exist_ok=True)
     except:
         print("Creation of the directory %s failed" % p)
     else:
