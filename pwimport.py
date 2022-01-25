@@ -12,7 +12,7 @@ from PIL import Image
 # Automatically import files and sort them into JPG, RAW, and video files.
 
 # Usage:
-# python3 ./pimport.py <search_dir>
+# python3 ./pwimport.py <search_dir>
 ##########################################################################
 
 # make the directory in a protected way, fails if directory cant be made

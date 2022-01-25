@@ -6,10 +6,10 @@ from pimport import make_dir_protected
 
 ##########################################################################
 # Description:
-# Makes the photo fiolder structure without copying anything
+# Makes the photo folder structure without copying anything
 
 # Usage:
-# python3 ./pfmake.py <search_dir>
+# python3 ./pwmakef.py <search_dir>
 ##########################################################################
 
 # no automatic copying, doesn't copy anything
