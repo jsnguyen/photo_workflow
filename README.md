@@ -5,7 +5,9 @@ Personal scripts for photo workflow. Takes some user input to make photo folders
 ## Folder Structure
 
 Title Folder:  `YYYYMMDD\_title/`
+
 Camera Folder: `camera/`
+t 
 Data Folders:  `JPG/` , `RAW/` , `Videos/`
 
 ## Files
