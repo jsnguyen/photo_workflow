@@ -6,7 +6,8 @@ from pimport import make_dir_protected
 
 ##########################################################################
 # Description:
-# Makes the photo folder structure without copying anything
+# Makes the photo folder structure without copying anything.
+# Requires user input for date, title, and camera name.
 
 # Usage:
 # python3 ./pwmakef.py <search_dir>

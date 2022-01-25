@@ -10,6 +10,8 @@ from PIL import Image
 ##########################################################################
 # Description:
 # Automatically import files and sort them into JPG, RAW, and video files.
+# Needs input to pick the date, set the title, and set camera name if it
+# cannot be determined from the image files.
 
 # Usage:
 # python3 ./pwimport.py <search_dir>
