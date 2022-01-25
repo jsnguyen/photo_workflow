@@ -1,4 +1,4 @@
-# Photo\_Workflow
+# photo\_workflow
 
 Personal scripts for photo workflow. Takes some user input to make photo folders and copy the files.
 
