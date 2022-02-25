@@ -118,8 +118,18 @@ def pimport(args):
     # print and choose from unique dates
     print('Dates found:')
     for i,el in enumerate(unique_dates):
-        n_photos = len(jpg_files[el])
-        print('[{:2}] {} ({} photos)'.format(i,el, n_photos))
+
+        try:
+            n_photos = len(jpg_files[el])
+        except KeyError:
+            n_photos = 0
+
+        try:
+            n_videos = len(video_files[el])
+        except KeyError:
+            n_videos = 0
+
+        print('[{:2}] {}  -> {:4} Photos, {:2} Videos'.format(i,el, n_photos, n_videos))
     date_index = int(input('Choose date: '))
     user_date = unique_dates[date_index]
 
