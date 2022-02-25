@@ -103,6 +103,10 @@ def pimport(args):
     # attempts to get camera name by reading the exif data of the first jpg
     try:
         camera_name = get_camera_name(jpg_files[list(jpg_files.keys())[0]][0])
+
+        if camera_name=='Canon EOS R5':
+            camera_name='EOS_R5'
+
         print('Camera Name:',camera_name)
     except:
         print('Camera name could not be read.')
@@ -114,7 +118,8 @@ def pimport(args):
     # print and choose from unique dates
     print('Dates found:')
     for i,el in enumerate(unique_dates):
-        print('[{:2}] {}'.format(i,el))
+        n_photos = len(jpg_files[el])
+        print('[{:2}] {} ({} photos)'.format(i,el, n_photos))
     date_index = int(input('Choose date: '))
     user_date = unique_dates[date_index]
 
