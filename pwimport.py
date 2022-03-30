@@ -37,7 +37,7 @@ def get_all_files_with_ext(search_dir, exts):
     paths = []
     for ext in exts:
         for path in pathlib.Path(search_dir).rglob('*.'+ext):
-            ctime = os.path.getctime(path.as_posix()) # gets the time in unix time (seconds)
+            ctime = os.path.getmtime(path.as_posix()) # gets the time in unix time (seconds)
             file_datetime = datetime.fromtimestamp(ctime)
 
             datetimes.append(file_datetime)
@@ -83,11 +83,16 @@ def get_camera_name(image_filename):
 def pimport(args):
     search_dir = pathlib.Path(args.search_dir)
 
+    if not os.path.isdir(search_dir):
+        print('[ERROR]: Directory does not exist!')
+        return
+
     # should be something like /Volumes/<dir>
     # also should be valid mount point
-    if not is_valid_search_dir(search_dir):
-        print('[ERROR]: Invalid search directory!')
-        return
+    if not args.n:
+        if not is_valid_search_dir(search_dir):
+            print('[ERROR]: Invalid search directory!')
+            return
     
     # search for files in directory by extension
     # sort jpg, raw and video files separately
@@ -130,8 +135,16 @@ def pimport(args):
             n_videos = 0
 
         print('[{:2}] {}  -> {:4} Photos, {:2} Videos'.format(i,el, n_photos, n_videos))
-    date_index = int(input('Choose date: '))
-    user_date = unique_dates[date_index]
+
+    str_date_indicies = input('Choose date(s): ') # multiple dates need spaces
+    date_indicies = str_date_indicies.split()
+    date_indicies = [int(el) for el in date_indicies]
+
+    user_dates = []
+    for el in date_indicies:
+        user_dates.append(unique_dates[el])
+
+    user_dates = sorted(user_dates)
 
     # input the title for that date
     # any spaces will be replaced with underscore
@@ -139,7 +152,11 @@ def pimport(args):
     user_title = user_title.strip().replace(' ','_')
 
     # name of the upper directory
-    dir_name = str(user_date)+'_'+user_title
+
+    if len(user_dates) == 1:
+        dir_name = str(user_dates[0])+'_'+user_title
+    else:
+        dir_name = '{}_to_{}_{}'.format(user_dates[0], user_dates[-1], user_title)
 
     # make upper structure
     # date/cameraname
@@ -150,36 +167,49 @@ def pimport(args):
     # make the lower directories and copy files
     # if user_date fails as a key in the dict, that means there are no files of that type for that date
     try:
-        jpg_filenames = jpg_files[user_date]
+        jpg_filenames = []
+        for el in user_dates:
+            jpg_filenames += jpg_files[el]
+
         jpg_dir = os.path.join(camera_dir, 'JPG')
         make_dir_protected(jpg_dir)
         copy_files(jpg_filenames, jpg_dir)
+
     except KeyError:
         print('No JPG files!')
 
     try:
-        raw_filenames = raw_files[user_date]
+        raw_filenames = []
+        for el in user_dates:
+            raw_filenames += raw_files[el]
+
         raw_dir = os.path.join(camera_dir, 'RAW')
         make_dir_protected(raw_dir)
         copy_files(raw_filenames, raw_dir)
+
     except KeyError:
         print('No RAW files!')
 
     try:
-        video_filenames = video_files[user_date]
+        video_filenames = []
+        for el in user_dates:
+            video_filenames += video_files[el]
+
         video_dir = os.path.join(camera_dir, 'Videos')
         make_dir_protected(video_dir)
         copy_files(video_filenames, video_dir)
+
     except KeyError:
         print('No video files!')
 
 def main():
 
-	parser = argparse.ArgumentParser(description='Process some integers.')
-	parser.add_argument('search_dir', type=str, help='Directory from which we are importing photos')
-	args = parser.parse_args()
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('search_dir', type=str, help='Directory from which we are importing photos')
+    parser.add_argument('-n', action='store_true', help='Ignores protection for import directory')
+    args = parser.parse_args()
 
-	pimport(args)
+    pimport(args)
 
 if __name__=='__main__':
     main()
