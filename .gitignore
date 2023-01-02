@@ -3,3 +3,4 @@
 *.NEF
 *.jpg
 .DS_Store
+__pycache__
