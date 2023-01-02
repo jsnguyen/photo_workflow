@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 import argparse
 
-from pimport import make_dir_protected
+from pwimport import make_dir_protected
 
 ##########################################################################
 # Description:
