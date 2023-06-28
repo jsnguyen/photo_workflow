@@ -97,6 +97,18 @@ def get_camera_name(image_filename):
     camera_name = exif[272]
     return camera_name
 
+def get_focal_length(image_filename)
+    '''
+    naive way of trying to get the camera name from the exif data
+    probably likely to fail, but good enough for now
+    returns focal length in mm
+    '''
+
+    image = Image.open(image_filename)
+    exif = image.getexif()
+    focal_length = exif.get_ifd(0x8769)[37386]
+    return focal_length
+
 def get_total_bytes(filenames):
     '''
     nice functional programming way to get total bytes of all files in a list
@@ -117,9 +129,10 @@ def pwimport(args):
     # should be something like /Volumes/<dir>
     # also should be valid mount point
     if not args.n:
-        if not is_valid_search_dir(search_dir):
-            print('[ERROR]: Invalid search directory!')
-            return
+        if not args.ignore_valid:
+            if not is_valid_search_dir(search_dir):
+                print('[ERROR]: Invalid search directory!')
+                return
     
     # search for files in directory by extension
     # sort jpg, raw and video files separately
@@ -132,14 +145,25 @@ def pwimport(args):
     video_ext = ['MP4', 'MOV']
     video_files = get_all_files_with_ext(search_dir, video_ext)
 
+    # assume all lenses have electronic data
+    is_dead_lens = False
+
     # attempts to get camera name by reading the exif data of the first jpg
     try:
-        camera_name = get_camera_name(jpg_files[list(jpg_files.keys())[0]][0])
+        first_jpg = jpg_files[list(jpg_files.keys())[0]][0]
+
+        camera_name = get_camera_name(first_jpg)
+        focal_length = get_focal_length(first_jpg)
+
+        # cant really have a focal length less than 1mm...
+        if int(focal_length) == 0:
+            is_dead_lens = True
 
         if camera_name=='Canon EOS R5':
             camera_name='EOS_R5'
 
         print('Camera name:',camera_name)
+
     except:
         print('Camera name could not be read.')
         camera_name = input('Camera name: ')
@@ -176,9 +200,15 @@ def pwimport(args):
         print('[{:2}] {}  -> {:4} Photos, {:3} Videos, {:>6.2f} {}'.format(i,el, n_photos, n_videos, val, unit))
 
     # also print available storage on device
-    fs_bs = storage.avail_storage()
-    val, unit = storage.best_denomination(fs_bs)
-    print('{:.2f} {} available on local storage'.format(val, unit))
+    if args.savedir:
+        fs_bs = storage.avail_storage(args.savedir)
+        val, unit = storage.best_denomination(fs_bs)
+        print('{:.2f} {} available on {}'.format(val, unit, args.savedir))
+    else:
+        fs_bs = storage.avail_storage(args.savedir)
+        val, unit = storage.best_denomination(fs_bs)
+        print('{:.2f} {} available on local storage'.format(val, unit))
+
 
     str_date_indicies = input('Choose date(s): ') # multiple dates need spaces
     if '-' in str_date_indicies:
@@ -281,8 +311,9 @@ def main():
     parser.add_argument('search_dir', type=str, help='Directory from which we are importing photos')
     parser.add_argument('--savedir', type=str, help='Directory to save to')
     parser.add_argument('-n', action='store_true', help='Ignores protection for import directory')
-    parser.add_argument('--dryrun', action='store_true', help='Stops creation of new folders and copying')
+    parser.add_argument('--dry-run', action='store_true', help='Stops creation of new folders and copying')
     parser.add_argument('--title', type=str, help='Set title in flag instead of waiting for input')
+    parser.add_argument('--ignore-valid', action='store_true', help='Ignore check for valid search directory (Which is /Volumes on a Mac)')
     args = parser.parse_args()
 
     pwimport(args)
