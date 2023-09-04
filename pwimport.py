@@ -1,7 +1,5 @@
-import os
 import shutil
-import glob
-import pathlib
+from pathlib import Path
 from datetime import datetime
 import argparse
 import functools
@@ -10,15 +8,15 @@ from PIL import Image
 
 import storage
 
-##########################################################################
-# Description:
-# Automatically import files and sort them into JPG, RAW, and video files.
-# Needs input to pick the date, set the title, and set camera name if it
-# cannot be determined from the image files.
+'''
+desc:
+Automatically import files and sort them into JPG, RAW, and video files.
+Needs input to pick the date, set the title, and set camera name if it
+cannot be determined from the image files.
 
-# Usage:
-# python3 ./pwimport.py <search_dir>
-##########################################################################
+usage:
+python3 ./pwimport.py <search_dir>
+'''
 
 def make_dir_protected(ddir):
     '''
@@ -28,7 +26,7 @@ def make_dir_protected(ddir):
     '''
 
     try:
-        pathlib.Path(ddir).mkdir(parents=True)
+        Path(ddir).mkdir(parents=True)
     except:
         raise Exception('Creation of the directory {} failed'.format(ddir))
     else:
@@ -45,8 +43,8 @@ def get_all_files_with_ext(search_dir, exts):
     datetimes = []
     paths = []
     for ext in exts:
-        for path in pathlib.Path(search_dir).rglob('*.'+ext):
-            ctime = os.path.getmtime(path.as_posix()) # gets the time in unix time (seconds)
+        for path in Path(search_dir).rglob('*.'+ext):
+            ctime = path.stat().st_mtime # gets the time in unix time (seconds)
             file_datetime = datetime.fromtimestamp(ctime)
 
             datetimes.append(file_datetime)
@@ -80,8 +78,8 @@ def is_valid_search_dir(directory):
     '''
 
     is_good = False
-    if pathlib.Path('/Volumes') in directory.parents:
-        if os.path.ismount(directory):
+    if Path('/Volumes') in directory.parents:
+        if directory.is_mount():
             is_good = True
 
     return is_good
@@ -97,7 +95,7 @@ def get_camera_name(image_filename):
     camera_name = exif[272]
     return camera_name
 
-def get_focal_length(image_filename)
+def get_focal_length(image_filename):
     '''
     naive way of trying to get the camera name from the exif data
     probably likely to fail, but good enough for now
@@ -120,9 +118,9 @@ def pwimport(args):
     main routine for copying 
     '''
 
-    search_dir = pathlib.Path(args.search_dir)
+    search_dir = Path(args.search_dir)
 
-    if not os.path.isdir(search_dir):
+    if not search_dir.is_dir():
         print('[ERROR]: Directory does not exist!')
         return
 
@@ -246,21 +244,21 @@ def pwimport(args):
     # name of the upper directory
 
     if len(user_dates) == 1:
-        dir_name = str(user_dates[0])+'_'+user_title
+        dir_name = Path(str(user_dates[0])+'_'+user_title)
     else:
-        dir_name = '{}_to_{}_{}'.format(user_dates[0], user_dates[-1], user_title)
+        dir_name = Path('{}_to_{}_{}'.format(user_dates[0], user_dates[-1], user_title))
 
     if args.savedir:
-        dir_name = os.path.join(args.savedir, dir_name)
+        dir_name = args.savedir / dir_name
 
     # expand user path always
-    dir_name = os.path.expanduser(dir_name)
+    dir_name = dir_name.expanduser()
 
     # make upper structure
     # date/cameraname
-    camera_dir = os.path.join(dir_name, camera_name)
+    camera_dir = dir_name / camera_name
     print('Creating folder: {}'.format(camera_dir))
-    if not args.dryrun:
+    if not args.dry_run:
         make_dir_protected(dir_name)
         make_dir_protected(camera_dir)
 
@@ -271,8 +269,8 @@ def pwimport(args):
         for el in user_dates:
             jpg_filenames += jpg_files[el]
 
-        jpg_dir = os.path.join(camera_dir, 'JPG')
-        if not args.dryrun:
+        jpg_dir = camera_dir / 'JPG'
+        if not args.dry_run:
             make_dir_protected(jpg_dir)
             copy_files(jpg_filenames, jpg_dir)
 
@@ -284,8 +282,8 @@ def pwimport(args):
         for el in user_dates:
             raw_filenames += raw_files[el]
 
-        raw_dir = os.path.join(camera_dir, 'RAW')
-        if not args.dryrun:
+        raw_dir = camera_dir / 'RAW'
+        if not args.dry_run:
             make_dir_protected(raw_dir)
             copy_files(raw_filenames, raw_dir)
 
@@ -297,8 +295,8 @@ def pwimport(args):
         for el in user_dates:
             video_filenames += video_files[el]
 
-        video_dir = os.path.join(camera_dir, 'Videos')
-        if not args.dryrun:
+        video_dir = camera_dir / 'Videos'
+        if not args.dry_run:
             make_dir_protected(video_dir)
             copy_files(video_filenames, video_dir)
 
@@ -314,7 +312,10 @@ def main():
     parser.add_argument('--dry-run', action='store_true', help='Stops creation of new folders and copying')
     parser.add_argument('--title', type=str, help='Set title in flag instead of waiting for input')
     parser.add_argument('--ignore-valid', action='store_true', help='Ignore check for valid search directory (Which is /Volumes on a Mac)')
+
+    parser.add_argument('--separate-dead', action='store_true', help='Separate the dead lens images into another folder')
     args = parser.parse_args()
+    args.savedir = Path(args.savedir)
 
     pwimport(args)
 
