@@ -3,6 +3,7 @@ from pathlib import Path
 from datetime import datetime
 import argparse
 import functools
+import hashlib
 
 from PIL import Image
 
@@ -113,12 +114,22 @@ def get_total_bytes(filenames):
     '''
     return functools.reduce(lambda a,b: a+b, map(storage.get_file_size, filenames))
 
+def get_sha256(image_filename):
+    h = hashlib.sha256()
+    with open(image_filename, 'rb') as f:
+            h.update(f.read())
+
+    return h.hexdigest()
+
 def pwimport(args):
     '''
     main routine for copying 
     '''
 
     search_dir = Path(args.search_dir)
+
+    if args.dry_run:
+        print('== DRY RUN ==')
 
     if not search_dir.is_dir():
         print('[ERROR]: Directory does not exist!')
@@ -159,6 +170,9 @@ def pwimport(args):
 
         if camera_name=='Canon EOS R5':
             camera_name='EOS_R5'
+
+        if camera_name=='NIKON Z f':
+            camera_name='NIKON_ZF'
 
         print('Camera name:',camera_name)
 
