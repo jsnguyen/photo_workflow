@@ -6,8 +6,11 @@ import functools
 import hashlib
 
 from PIL import Image
+from pillow_heif import register_heif_opener
 
 import storage
+
+register_heif_opener()
 
 '''
 desc:
@@ -145,10 +148,10 @@ def pwimport(args):
     
     # search for files in directory by extension
     # sort jpg, raw and video files separately
-    jpg_ext = ['JPG']
+    jpg_ext = ['JPG', 'HIF']
     jpg_files = get_all_files_with_ext(search_dir, jpg_ext)
 
-    raw_ext = ['NEF', 'CR3', 'RAF']
+    raw_ext = ['NEF', 'CR3', 'RAF', 'ARW']
     raw_files = get_all_files_with_ext(search_dir, raw_ext)
 
     video_ext = ['MP4', 'MOV']
@@ -171,8 +174,11 @@ def pwimport(args):
         if camera_name=='Canon EOS R5':
             camera_name='EOS_R5'
 
-        if camera_name=='NIKON Z f':
+        elif camera_name=='NIKON Z f':
             camera_name='NIKON_ZF'
+
+        elif camera_name=='ILCE-7RM5':
+            camera_name='SONY_A7R_V'
 
         print('Camera name:',camera_name)
 
